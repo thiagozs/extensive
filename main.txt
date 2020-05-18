@@ -1,0 +1,283 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+var (
+	names = map[int]string{}
+
+	casas = []string{
+		"",
+		"mil",
+		"milhões",
+		"bilhões",
+		"trilhões",
+		"quatrilhões",
+		"quintilhões",
+		"sextilhões",
+		"septilhões",
+		"octilhões",
+		"nonilhões",
+		"decilhões",
+		"undecilhões",
+		"duodecilhões",
+		"tredecilhões",
+	}
+
+	dezenas = map[int]string{
+		11: "onze",
+		12: "doze",
+		13: "treze",
+		14: "quatorze",
+		15: "quinze",
+		16: "dezesseis",
+		17: "dezessete",
+		18: "dezoito",
+		19: "dezenove",
+	}
+
+	unidade = map[int]string{
+		0: "zero",
+		1: "um",
+		2: "dois",
+		3: "três",
+		4: "quatro",
+		5: "cinco",
+		6: "seis",
+		7: "sete",
+		8: "oito",
+		9: "nove",
+	}
+
+	dezena = map[int]string{
+		10: "dez",
+		20: "vinte",
+		30: "trinta",
+		40: "quarenta",
+		50: "cinquenta",
+		60: "sessenta",
+		70: "setenta",
+		80: "oitenta",
+		90: "noventa",
+	}
+
+	centena = map[int]string{
+		100: "cento",
+		200: "duzentos",
+		300: "trezentos",
+		400: "quatrocentos",
+		500: "quinhentos",
+		600: "seiscentos",
+		700: "setecentos",
+		800: "oitocentos",
+		900: "novecentos",
+	}
+
+	number = flag.String("num", "10", "A integer number")
+)
+
+type Mapper map[int]string
+
+func init() {
+	merge := func(left Mapper, elems ...Mapper) Mapper {
+		for _, elem := range elems {
+			for key, rightVal := range elem {
+				if _, present := left[key]; !present {
+					left[key] = rightVal
+				}
+			}
+		}
+		return left
+	}
+
+	names = merge(names, unidade, dezenas, dezena, centena)
+}
+
+func main() {
+	flag.Parse()
+	fmt.Println()
+	//fmt.Println(getGroup(*number))
+	//fmt.Println(getGroup("312"))
+	numberInFull(*number)
+	//numberInFull("10009201")
+
+}
+
+func extensiveNumber(number string) string {
+
+	// reg, err := regexp.Compile("[^0-9]+")
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	//numStr := reg.ReplaceAllString(number, "")
+	//sliceNumStr := strings.Split(numStr, "")
+
+	return ""
+}
+
+func rangeMaps(number int) string {
+	result := ""
+	if v, ok := names[number]; ok {
+		result = v
+	}
+	return result
+}
+
+func getGroup(number string) string {
+	output := ""
+
+	if number == "100" {
+		return "cem"
+	}
+
+	// split string
+	ss := strings.Split(number, "")
+
+	for i := 0; i < len(ss); i++ {
+		chr := ss[i]
+
+		switch len(ss) {
+		// case of unit
+		case 1:
+			fmt.Println("stage 1")
+			output += rangeMaps(getInt(chr))
+		// case of dozen
+		case 2:
+			fmt.Println("stage 2")
+			if getInt(chr) == 0 {
+				continue
+			}
+			switch i {
+			case 0:
+				if getInt(number) > 10 && getInt(number) < 20 {
+					if output != "" {
+						output += " e " + rangeMaps(getInt(number))
+					} else {
+						output += rangeMaps(getInt(number))
+					}
+					continue
+				}
+				output += rangeMaps(getInt(chr) * 10)
+			case 1:
+				if getInt(number) > 20 && getInt(chr) > 0 {
+					output += " e " + rangeMaps(getInt(chr))
+				}
+			}
+		// case of hundred
+		case 3:
+			fmt.Println("stage 3")
+			dozen := number[1:] // get a dozen
+			if getInt(chr) == 0 {
+				continue
+			}
+			switch i {
+			case 0:
+				output += rangeMaps(getInt(chr) * 100)
+			case 1:
+				if getInt(dozen) > 10 && getInt(dozen) < 20 {
+					output += " e " + rangeMaps(getInt(dozen))
+					fmt.Println("stage 3 - 1 A")
+					continue
+				}
+				output += " " + rangeMaps(getInt(chr)*10)
+				fmt.Println("stage 3 - 1 B")
+			case 2:
+				if getInt(chr) > 0 &&
+					!(getInt(dozen) > 10 && getInt(dozen) < 20) {
+					output += " e " + rangeMaps(getInt(chr))
+					fmt.Println("stage 3 - 2 A")
+					//continue
+				}
+				//output += " e " + rangeMaps(getInt(chr))
+				//fmt.Println("stage 3 - 2 B")
+			}
+		}
+	}
+	return output
+}
+
+func getInt(number string) int {
+	index, _ := strconv.Atoi(string(number))
+	return index
+}
+
+func split(buf string, limit int) [][]string {
+	var divided [][]string
+	var arr = strings.Split(buf, "")
+	size := (len(arr) + limit - 1) / limit
+
+	if size != 3 {
+		size = 3
+	}
+
+	for i := len(arr); i >= 0; i -= size {
+		end := i - size
+		if end < 0 {
+			end = 0
+		}
+		divided = append(divided, arr[end:i])
+	}
+	return divided
+}
+
+func numberInFull(number string) {
+
+	output := "" // output write
+
+	nums := split(number, 3) //limit calc
+
+	for i, num := range nums {
+		// flat  the numbers
+		fnum := strings.Join(num, "")
+
+		// if array and string is not empty
+		if len(num) > 0 && fnum != "" {
+			pos := pos(fnum)
+
+			// get minemonic
+			cas := casas[i]
+			if getInt(pos) == 1 {
+				cas = strings.Replace(cas, "ões", "ão", -1)
+			}
+
+			test := fmt.Sprintf("%s %s", getGroup(fnum), cas)
+			if i == 0 && getInt(pos) > 0 {
+				output = fmt.Sprintf("%s %s", test, output)
+				continue
+			}
+
+			if getInt(pos) > 0 {
+				output = fmt.Sprintf("%s %s %s", test, "(e)", output)
+			}
+		}
+	}
+	fmt.Println(output)
+}
+
+func pos(fnum string) string {
+	var pos string
+	fmt.Println("fnum ==>", fnum)
+	fmt.Println("fnum len ==>", len(fnum))
+	switch len(fnum) {
+	case 1:
+		pos = fnum[:1]
+	case 2:
+		pos = fnum[:2]
+	case 3:
+		pos = fnum[:3]
+	}
+
+	if strings.HasPrefix(pos, "0") {
+		pos = pos[:3]
+	}
+
+	fmt.Println("pos ==>", pos)
+	fmt.Println("***********************")
+
+	return pos
+}
