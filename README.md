@@ -10,9 +10,9 @@ Here is a list of stack of tech used in this project
 * golangci-lint
 * Github CI
 
-## Dependencies of project
+## No Dependencies
 
-You need install some libs for running this project.
+These dependencies are just to make it easier to run the tests and make the API calls. You do not need to install them. The project itself does not have any external dependence on libraries other than the programming language itself.
 
 ### Httpie for curl sintact sugar
 
